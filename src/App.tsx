@@ -4,7 +4,7 @@
 */
 
 import * as React from 'react';
-import { TextArea } from 'semantic-ui-react';
+import { Form, Grid, TextArea } from 'semantic-ui-react';
 import './App.css';
 
 export class TimerDashboard extends React.Component {
@@ -27,7 +27,7 @@ class EditableTimerList extends React.Component {
   }
   render() {
     return (
-      <div id="timers">
+      <div className="ui form">
         <Timer
           title="Walk Timer"
           project="Dr. Strangelove"
@@ -35,17 +35,24 @@ class EditableTimerList extends React.Component {
           onStopClick={this.handleTimerText}         
         />
         <div className="ui horizontal divider">Results</div>
-        <TextArea 
-          value={this.state.timerText}
-          rows="3"
-          style={{ minHeight: 100, minWidth: 400}}     
-        />> 
+        <Grid centered={true} columns={1}>
+          <Grid.Column>
+              <Form.Field
+                control={TextArea}
+                name={name}
+                value={this.state.timerText}
+                placeholder="Placeholder"
+                rows={3}
+                width={4}
+              />
+          </Grid.Column>
+        </Grid>
       </div>
     );
   }
 }
 
-interface Props {
+interface TimerProps {
     title: string;
     project: string;
     elapsed: string;
@@ -53,7 +60,7 @@ interface Props {
     onStopClick: any;
 }
 
-interface State {
+interface TimerState {
     timerIsRunning: boolean;
     elapsed: number;
     runningSince: number;
@@ -61,7 +68,7 @@ interface State {
     timerToken: any;
 }
 
-class Timer extends React.Component<Props, State> {
+class Timer extends React.Component<TimerProps, TimerState> {
   state = {
     timerIsRunning: false,
     elapsed: 0,
@@ -132,7 +139,7 @@ class Timer extends React.Component<Props, State> {
   }
 }
 
-interface Propsx {
+interface ButtonProps {
   timerIsRunning: boolean;
   // tslint:disable-next-line:no-any
   onStopClick: any;
@@ -140,7 +147,7 @@ interface Propsx {
   onStartClick: any;
 }
 
-class TimerActionButton extends React.Component<Propsx> {
+class TimerActionButton extends React.Component<ButtonProps> {
   render() {
     if (this.props.timerIsRunning) {
       return (
