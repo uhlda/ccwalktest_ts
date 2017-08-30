@@ -4,7 +4,6 @@
 */
 
 import * as React from 'react';
-import { Form, Grid, TextArea } from 'semantic-ui-react';
 import './App.css';
 
 export class TimerDashboard extends React.Component {
@@ -21,32 +20,27 @@ class EditableTimerList extends React.Component {
   state = { 
     timerText: ''
   };
-  handleTimerText = (elapsedTime: number) => {
+  showTimerText = (elapsedTime: number) => {
     const text = 'The patient took ' + elapsedTime + ' seconds to complete the 10 meter course';
     this.setState({ timerText: text });
   }
+  clearTimerText = (elapsedTime: number) => {
+    this.setState({ timerText: '' });
+  } 
   render() {
     return (
-      <div className="ui form">
+      <div id="timerForm" className="ui form">
         <Timer
           title="Walk Timer"
           project="Dr. Strangelove"
           elapsed="0000000"
-          onStopClick={this.handleTimerText}         
+          onStartClick={this.clearTimerText}         
+          onStopClick={this.showTimerText}         
         />
         <div className="ui horizontal divider">Results</div>
-        <Grid centered={true} columns={1}>
-          <Grid.Column>
-              <Form.Field
-                control={TextArea}
-                name={name}
-                value={this.state.timerText}
-                placeholder="Placeholder"
-                rows={3}
-                width={4}
-              />
-          </Grid.Column>
-        </Grid>
+        <div className="ui raised very padded text container segment">
+          <p>{this.state.timerText}</p>
+        </div>
       </div>
     );
   }
@@ -56,6 +50,8 @@ interface TimerProps {
     title: string;
     project: string;
     elapsed: string;
+    // tslint:disable-next-line:no-any
+    onStartClick: any;
     // tslint:disable-next-line:no-any
     onStopClick: any;
 }
@@ -89,6 +85,7 @@ class Timer extends React.Component<TimerProps, TimerState> {
       timerIsRunning: true,
       runningSince: Date.now()
     });
+    this.props.onStartClick();
   }
   handleStopClick = () => {
     const elapsedString = renderElapsedString(
@@ -119,14 +116,6 @@ class Timer extends React.Component<TimerProps, TimerState> {
             <h2>
               {elapsedString}
             </h2>
-          </div>
-          <div className="extra content">
-            <span className="right floated edit icon">
-              <i className="edit icon" />
-            </span>
-            <span className="right floated trash icon">
-              <i className="trash icon" />
-            </span>
           </div>
         </div>
         <TimerActionButton
