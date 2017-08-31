@@ -35,7 +35,6 @@ class UIDriver extends React.Component<{}, DriverState> {
     this.closeForm();
   }
 
-  // tslint:disable-next-line:no-any
   handleSubmit = (doc: string) => {
     this.setState({ doctor: doc });
     this.closeForm();
@@ -59,7 +58,6 @@ class UIDriver extends React.Component<{}, DriverState> {
           onFormClose={this.handleFormClose}
         />
       );
-    // Inside EditableTimer
     } else {
       return (
         <EditableTimer 
@@ -90,8 +88,11 @@ class EditableTimer extends React.Component<EditProps, EditState> {
   };
 
   showTimerText = (elapsedTime: number) => {
-    const text = 'The patient took ' + elapsedTime + ' seconds to complete the 10 meter course';
-    this.setState({ timerText: text });
+    let workText: string = this.state.timerText;
+    let newText: string = workText.concat(
+        'The patient took ' + elapsedTime + ' seconds to complete the 10 meter course. \r\n'
+    );
+    this.setState({ timerText: newText });
   }
 
   clearTimerText = (elapsedTime: number) => {
@@ -105,13 +106,13 @@ class EditableTimer extends React.Component<EditProps, EditState> {
           title="Walk Timer"
           doctor={this.props.doctor}
           elapsed="0000000"
-          onStartClick={this.clearTimerText}         
           onStopClick={this.showTimerText}         
           onEditClick={this.props.onTimerEdit}         
+          onTrashClick={this.clearTimerText}         
         />
         <div className="ui horizontal divider">Results</div>
-        <div className="ui raised very padded text container segment">
-          <p>{this.state.timerText}</p>
+        <div className="ui raised very padded center aligned text container green vertical horizontal segment">
+          {this.state.timerText}
         </div>
       </div>
     );
@@ -185,11 +186,11 @@ interface TimerProps {
     doctor: string;
     elapsed: string;
     // tslint:disable-next-line:no-any
-    onStartClick: any;
-    // tslint:disable-next-line:no-any
     onStopClick: any;
     // tslint:disable-next-line:no-any
     onEditClick: any;
+    // tslint:disable-next-line:no-any
+    onTrashClick: any;
 }
 
 interface TimerState {
@@ -207,22 +208,25 @@ class Timer extends React.Component<TimerProps, TimerState> {
     runningSince: 0,
     timerToken: 0
   };  
+
   componentDidMount() {
     this.setState({ timerToken: setInterval(
        () => this.forceUpdate(), 
        50)
     });
   }
+
   componentWillUnmount() {
     clearInterval(this.state.timerToken);
   }
+
   handleStartClick = () => {
     this.setState({ 
       timerIsRunning: true,
       runningSince: Date.now()
     });
-    this.props.onStartClick();
   }
+
   handleStopClick = () => {
     const elapsedString = renderElapsedString(
       this.state.elapsed, 
@@ -234,19 +238,18 @@ class Timer extends React.Component<TimerProps, TimerState> {
       runningSince: 0
     });
   }
-  handleEditClick = () => {
-    this.props.onEditClick();
-  }
+
   render() {
     const elapsedString = renderElapsedString(
       this.state.elapsed, 
       this.state.runningSince
     );
     return (
-      <div className="ui centered card">
+      <div className="ui image centered card">
         <div className="content">
+          <img className="right floated mini ui image" src="../public/jack.png" />
           <div className="header">
-            {this.props.title.toString()}
+            {this.props.title}
           </div>
           <div className="meta">
             {this.props.doctor}
@@ -258,12 +261,18 @@ class Timer extends React.Component<TimerProps, TimerState> {
           </div>
         </div>
         <div className="extra content">
-            <span
-              className="right floated edit icon"
-              onClick={this.handleEditClick}
-            >
-              <i className="edit icon" />
-            </span>
+          <span
+            className="right floated edit icon"
+            onClick={this.props.onEditClick}
+          >
+            <i className="edit icon" />
+          </span>
+          <span
+            className="right floated trash icon"
+            onClick={this.props.onTrashClick}
+          >
+            <i className="trash icon" />
+          </span>            
         </div>        
         <TimerActionButton
           timerIsRunning={this.state.timerIsRunning}

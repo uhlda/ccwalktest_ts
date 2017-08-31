@@ -3,13 +3,9 @@
 }
 
 #content {
-  margin-top: 3em;
-}
-
-.timerForm {
-  margin-top: 5em;
-}
-
-#content {
   margin-top: 10em
+}
+
+div {
+  white-space: pre
 }
