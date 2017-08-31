@@ -10,32 +10,104 @@ export class TimerDashboard extends React.Component {
   render() {
     return (
       <div>
-            <EditableTimerList /> 
+            <UIDriver /> 
       </div>
     );
   }
 }
 
-class EditableTimerList extends React.Component {
+interface DriverState {
+  doctor: string;
+  editFormOpen: boolean;
+}
+
+class UIDriver extends React.Component<{}, DriverState> {
+  state = {
+    editFormOpen: false,
+    doctor: 'Default Doctor'
+  };
+
+  handleEditClick = () => {
+    this.openForm();
+  }
+  
+  handleFormClose = () => {
+    this.closeForm();
+  }
+
+  // tslint:disable-next-line:no-any
+  handleSubmit = (doc: string) => {
+    this.setState({ doctor: doc });
+    this.closeForm();
+  }
+
+  closeForm = () => {
+    this.setState({ editFormOpen: false });
+  }
+
+  openForm = () => {
+    this.setState({ editFormOpen: true });
+  }
+
+  render() {
+    if (this.state.editFormOpen) {
+      return (
+        <TimerForm
+          title="Enter Doctor:"
+          doctor={this.state.doctor}
+          onFormSubmit={this.handleSubmit}
+          onFormClose={this.handleFormClose}
+        />
+      );
+    // Inside EditableTimer
+    } else {
+      return (
+        <EditableTimer 
+          onTimerEdit={this.openForm}
+          doctor={this.state.doctor}
+        />
+      );
+    }
+  }
+}
+
+interface EditProps {
+  // tslint:disable-next-line:no-any
+  onTimerEdit: any;
+  doctor: string;
+}
+
+interface EditState {
+  editFormOpen: boolean;
+  timerText: string;
+}
+
+class EditableTimer extends React.Component<EditProps, EditState> {
   state = { 
+    project: '',
+    editFormOpen: false,
     timerText: ''
   };
+
   showTimerText = (elapsedTime: number) => {
     const text = 'The patient took ' + elapsedTime + ' seconds to complete the 10 meter course';
     this.setState({ timerText: text });
   }
+
   clearTimerText = (elapsedTime: number) => {
     this.setState({ timerText: '' });
   } 
+
   render() {
     return (
-      <div id="timerForm" className="ui form">
+      <div className="ui form">
         <Timer
           title="Walk Timer"
-          project="Dr. Strangelove"
+          doctor={this.props.doctor}
           elapsed="0000000"
           onStartClick={this.clearTimerText}         
           onStopClick={this.showTimerText}         
+          onEditClick={this.props.onTimerEdit}         
         />
         <div className="ui horizontal divider">Results</div>
         <div className="ui raised very padded text container segment">
@@ -46,14 +118,78 @@ class EditableTimerList extends React.Component {
   }
 }
 
+interface FormProps {
+  // tslint:disable-next-line:no-any
+  onFormSubmit: any;  
+  // tslint:disable-next-line:no-any
+  onFormClose: any;
+  title: string;
+  doctor: string;
+}
+
+interface FormState {
+  doctor: string;
+  editFormOpen: boolean;
+}
+
+class TimerForm extends React.Component<FormProps, FormState> {
+  state = {
+    doctor: this.props.doctor || '',
+    editFormOpen: false
+  };
+  // tslint:disable-next-line:no-any
+  handleDoctorChange = (e: any) => {
+    this.setState({ doctor: e.target.value });
+  }
+  handleSubmit = () => {
+    this.props.onFormSubmit(
+      this.state.doctor      
+    );
+  }
+  render() {
+    return (
+      <div className="ui centered card">
+        <div className="content">
+          <div className="ui form">
+            <div className="field">
+              <label>Doctor</label>
+              <input
+                type="text"
+                value={this.state.doctor}
+                onChange={this.handleDoctorChange}
+              />
+            </div>
+            <div className="ui two bottom attached buttons">
+              <button
+                className="ui basic blue button"
+                onClick={this.handleSubmit}
+              >
+                Save
+              </button>
+              <button
+                className="ui basic red button"
+                onClick={this.props.onFormClose}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
 interface TimerProps {
     title: string;
-    project: string;
+    doctor: string;
     elapsed: string;
     // tslint:disable-next-line:no-any
     onStartClick: any;
     // tslint:disable-next-line:no-any
     onStopClick: any;
+    // tslint:disable-next-line:no-any
+    onEditClick: any;
 }
 
 interface TimerState {
@@ -98,6 +234,9 @@ class Timer extends React.Component<TimerProps, TimerState> {
       runningSince: 0
     });
   }
+  handleEditClick = () => {
+    this.props.onEditClick();
+  }
   render() {
     const elapsedString = renderElapsedString(
       this.state.elapsed, 
@@ -107,10 +246,10 @@ class Timer extends React.Component<TimerProps, TimerState> {
       <div className="ui centered card">
         <div className="content">
           <div className="header">
-            {this.props.title}
+            {this.props.title.toString()}
           </div>
           <div className="meta">
-            {this.props.project}
+            {this.props.doctor}
           </div>
           <div className="center aligned description">
             <h2>
@@ -118,6 +257,14 @@ class Timer extends React.Component<TimerProps, TimerState> {
             </h2>
           </div>
         </div>
+        <div className="extra content">
+            <span
+              className="right floated edit icon"
+              onClick={this.handleEditClick}
+            >
+              <i className="edit icon" />
+            </span>
+        </div>        
         <TimerActionButton
           timerIsRunning={this.state.timerIsRunning}
           onStartClick={this.handleStartClick}
